@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  schedule:
+  - cron: "0 8,20 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+      with:
+        token: ${{ secrets.GITHUB_PERSONAL_TOKEN }}
+    - name: dmut-resolvers
+      run: |
+        go get -u github.com/bp0lr/dnsfaster
+        rm -f ../resolvers.txt
+        wget https://public-dns.info/nameservers.txt -o /tmp/resolvers.txt
+        dnsfaster --domain example.com --in /tmp/resolvers.txt --out "../resolvers.txt" --tests 500 --workers 10 --filter-time 400 --filter-errors 50 --filter-rate 90 --save-dns
+    - name: Commit resolvers.txt
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add resolvers.txt
+        git commit -m "Update resolvers" -a
+        git push "https://janmasarik:${{ secrets.GITHUB_PERSONAL_TOKEN }}@github.com/bp0lr/dmut-resolvers.git" HEAD:master --follow-tags
