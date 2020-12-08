@@ -24,7 +24,8 @@ jobs:
         wget https://public-dns.info/nameservers.txt -O /tmp/resolvers.txt
         go get -u github.com/bp0lr/dnsfaster
         pwd
-        dnsfaster --domain example.com --in /tmp/resolvers.txt --out "../resolvers.txt" --tests 100 --workers 50 --filter-time 400 --filter-errors 10 --filter-rate 90 --save-dns
+        ls
+        dnsfaster --domain example.com --in /tmp/resolvers.txt --out "resolvers.txt" --tests 100 --workers 50 --filter-time 400 --filter-errors 10 --filter-rate 90 --save-dns
     - name: Commit resolvers.txt
       run: |
         pwd
