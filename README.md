@@ -5,7 +5,7 @@ The task is runned one time a day.
 
 The process include:
 - download a public list from https://public-dns.info/nameservers.txt
-- run this list again [https://github.com/bp0lr/dnsfaster](dnsfaster)
+- check this list using [https://github.com/bp0lr/dnsfaster](dnsfaster)
 - update this repo whit the result.
 
 
