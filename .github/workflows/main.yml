@@ -12,7 +12,7 @@ jobs:
     - name: Installing checkout
       uses: actions/checkout@master
       with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/setup-go@v2
       with:
         go-version: '1.15.0' # The Go version to download (if necessary) and use.    
@@ -23,11 +23,13 @@ jobs:
         rm -f ../resolvers.txt
         wget https://public-dns.info/nameservers.txt -O /tmp/resolvers.txt
         go get -u github.com/bp0lr/dnsfaster
-        dnsfaster --domain example.com --in /tmp/resolvers.txt --out "../resolvers.txt" --tests 500 --workers 50 --filter-time 400 --filter-errors 50 --filter-rate 90 --save-dns
+        pwd
+        dnsfaster --domain example.com --in /tmp/resolvers.txt --out "../resolvers.txt" --tests 100 --workers 50 --filter-time 400 --filter-errors 10 --filter-rate 90 --save-dns
     - name: Commit resolvers.txt
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add resolvers.txt
-        git commit -m "Update resolvers" -a
-        git push "https://bp0lr:${{ secrets.GITHUB_TOKEN }}@github.com/bp0lr/dmut-resolvers.git" HEAD:master --follow-tags
+        pwd
+        sudo git config --local user.email "action@github.com"
+        sudo git config --local user.name "GitHub Action"
+        sudo git add resolvers.txt
+        sudo git commit -m "Update resolvers" -a
+        sudo git push "https://bp0lr:${{ secrets.GITHUB_TOKEN }}@github.com/bp0lr/dmut-resolvers.git" HEAD:master --follow-tags
