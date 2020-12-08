@@ -4,7 +4,7 @@ this repo generate resolvers.txt using github actions.
 The task is runned one time a day.
 
 The process include:
-- download a public list from https://public-dns.info/nameservers.txt
+- download a public list from https://public-dns.info/nameserver/us.txt
 - check this list using [https://github.com/bp0lr/dnsfaster](dnsfaster)
 - update this repo whit the result.
 
