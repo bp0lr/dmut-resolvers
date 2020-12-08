@@ -33,4 +33,4 @@ jobs:
         sudo git config --local user.name "GitHub Action"
         sudo git add resolvers.txt
         sudo git commit -m "Update resolvers" -a
-        sudo git push "https://bp0lr:${{ secrets.GITHUB_TOKEN }}@github.com/bp0lr/dmut-resolvers.git" HEAD:master --follow-tags
+        sudo git push "https://bp0lr:${{ secrets.GITHUB_TOKEN }}@github.com/bp0lr/dmut-resolvers.git"
