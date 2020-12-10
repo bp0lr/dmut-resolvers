@@ -16,5 +16,5 @@ This file is generated to be used by [https://github.com/bp0lr/dmut](dmut)
 
 ### top20.txt
 
-Top 20 public dns servers in case you need something small and fast.
+Top 20 public dns servers, in case you need something small and fast.
 the error rate for this list is < 1%.
