@@ -11,9 +11,7 @@ jobs:
       uses: actions/checkout@master
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-    - uses: actions/setup-go@v2
-      with:
-        go-version: '1.15.0' # The Go version to download (if necessary) and use.    
+    - uses: actions/setup-go@v3.3.1
     - name: Generating dns list
       run: |
         rm -f resolvers.txt
