@@ -1,15 +1,11 @@
-# This is a basic workflow to help you get started with Actions
-
 name: UpdateResolvers2022
 
-# Controls when the workflow will run
 on:
-  # Allows you to run this workflow manually from the Actions tab
+  schedule:
+    - cron:  '0 8 * * *'
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
     runs-on: ubuntu-latest
     steps:
@@ -29,4 +25,13 @@ jobs:
           go-version: 1.19          
     - run: |     
         go install github.com/bp0lr/dnsfaster@latest
-        dnsfaster
+        dnsfaster --domain example.com --in /tmp/resolvers.txt --out "resolvers.txt" --tests 200 --workers 100 --filter-time 400 --filter-errors 20 --filter-rate 90 --save-dns
+        
+    - name: Commit resolvers.txt
+      run: |
+        pwd
+        sudo git config --local user.email "action@github.com"
+        sudo git config --local user.name "GitHub Action"
+        sudo git add resolvers.txt
+        sudo git commit -m "Update resolvers" -a
+        sudo git push "https://bp0lr:${{ secrets.GITHUB_TOKEN }}@github.com/bp0lr/dmut-resolvers.git"
