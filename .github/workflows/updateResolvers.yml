@@ -1,0 +1,29 @@
+# This is a basic workflow to help you get started with Actions
+
+name: UpdateResolvers2022
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Installing checkout
+      uses: actions/checkout@master
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: actions/setup-go@v3.3.1
+      with:
+          go-version: 1.19    
+    - name: Generating dns list
+      run: |
+        rm -f resolvers.txt
+        wget https://public-dns.info/nameserver/us.txt -O /tmp/resolvers.txt
+    - name: running dnsfaster
+        go install github.com/bp0lr/dnsfaster@latest
+        dnsfaster
