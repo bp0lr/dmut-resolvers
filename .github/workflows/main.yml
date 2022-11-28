@@ -1,8 +1,7 @@
 name: UpdateResolvers
 
 on:
-  schedule:
-    - cron:  '0 8 * * *'
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,6 +11,7 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/setup-go@v3.3.1
+    
     - name: Generating dns list
       run: |
         rm -f resolvers.txt
