@@ -11,13 +11,15 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/setup-go@v3.3.1
-    
+      with:
+          go-version: 1.19    
     - name: Generating dns list
       run: |
         rm -f resolvers.txt
         wget https://public-dns.info/nameserver/us.txt -O /tmp/resolvers.txt
+    - name: running dnsfaster
         go install github.com/bp0lr/dnsfaster@latest
-        dnsfaster --domain example.com --in /tmp/resolvers.txt --out "resolvers.txt" --tests 200 --workers 100 --filter-time 400 --filter-errors 20 --filter-rate 90 --save-dns
+        dnsfaster --domain example.com --in /tmp/resolvers.txt --out "resolvers.txt" --tests 200 --workers 100 --filter-time 400 --filter-errors 20 --filter-rate 90 --save-dns    
     - name: Commit resolvers.txt
       run: |
         pwd
