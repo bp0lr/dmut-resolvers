@@ -6,12 +6,11 @@ The task runs one time a day.
 
 The process include:
 - download a public list from https://public-dns.info/nameserver/us.txt
-- check this list using [https://github.com/bp0lr/dnsfaster](dnsfaster)
+- check this list using [dnsfaster](https://github.com/bp0lr/dnsfaster)
 - update this repo whit the result.
 
 
-This file is generated to be used by [https://github.com/bp0lr/dmut](dmut)
-
+This file is generated to be used by [dmut](https://github.com/bp0lr/dmut)
 
 
 ### top20.txt
