@@ -1,0 +1,7 @@
+* text=auto
+*.py text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+resolvers.txt text eol=lf
+top20.txt text eol=lf

@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    paths: ['scripts/**', 'tests/**', '.github/**', 'update-config.json']
+  pull_request:
+    paths: ['scripts/**', 'tests/**', '.github/**', 'update-config.json']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Offline pipeline tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test validation, failures and publication decisions without DNS traffic
+        run: python3 -m unittest discover -s tests -v
+      - name: Read the configured Go version
+        id: tools
+        run: python3 -c 'import json; print("go="+json.load(open("update-config.json"))["go_version"])' >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ steps.tools.outputs.go }}
+          cache: false
+      - name: Validate GitHub Actions syntax and shell snippets
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -color

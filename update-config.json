@@ -1,0 +1,17 @@
+{
+  "go_version": "1.27.1",
+  "dnsfaster_ref": "2ba7c0afdabd9fde0128a5fabf755cecf6ae2617",
+  "source_url": "https://public-dns.info/nameserver/us.txt",
+  "max_source_bytes": 1048576,
+  "max_candidates": 20000,
+  "minimum_resolvers": 20,
+  "maximum_drop_fraction": 0.5,
+  "domain": "example.com",
+  "tests": 20,
+  "workers": 10,
+  "qps": 50,
+  "timeout_seconds": 2,
+  "max_duration_seconds": 10800,
+  "minimum_success_percent": 95,
+  "maximum_p95_ms": 400
+}

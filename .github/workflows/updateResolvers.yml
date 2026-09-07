@@ -1,35 +1,124 @@
-name: UpdateResolvers2022
+name: Update DNS resolvers
+run-name: "DNS update · ${{ github.event_name == 'schedule' && 'scheduled publication' || (inputs.dry_run && 'preview' || 'publication') }}"
 
 on:
-  workflow_dispatch
-  
+  schedule:
+    - cron: '23 6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Only validate and upload a preview (do not publish)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: resolver-update-${{ github.repository }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  generate:
+    name: Generate and validate candidate lists
+    runs-on: ubuntu-24.04
+    timeout-minutes: 195
     steps:
-    - name: Installing checkout
-      uses: actions/checkout@master
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Generating dns list
-      run: |
-        rm -f resolvers.txt
-        wget https://public-dns.info/nameserver/us.txt -O /tmp/resolvers.txt
-    
-    - name: running dnsfaster
-      uses: actions/setup-go@v3.3.1
-      with:
-          go-version: 1.19          
-    - run: |     
-        go install github.com/bp0lr/dnsfaster@latest
-        dnsfaster --domain example.com --in /tmp/resolvers.txt --out "resolvers.txt" --tests 200 --workers 100 --filter-time 400 --filter-errors 20 --filter-rate 90 --save-dns
-        
-    - name: Commit resolvers.txt
-      run: |
-        pwd
-        sudo git config --local user.email "action@github.com"
-        sudo git config --local user.name "GitHub Action"
-        sudo git add resolvers.txt
-        sudo git commit -m "Update resolvers" -a
-        sudo git push "https://bp0lr:${{ secrets.GITHUB_TOKEN }}@github.com/bp0lr/dmut-resolvers.git"
+      - name: Check out the requested revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Explain whether this run can publish
+        env:
+          PUBLICATION_MODE: >-
+            ${{ github.ref != format('refs/heads/{0}', github.event.repository.default_branch) &&
+            'Preview only: publication is disabled on non-default branches.' ||
+            (github.event_name == 'workflow_dispatch' && inputs.dry_run &&
+            'Preview only: the manual preview option is enabled.' ||
+            'Publication enabled: valid changes will be published by a separate job.') }}
+        run: echo "$PUBLICATION_MODE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Read the pinned tool versions
+        id: tools
+        run: |
+          mkdir -p "$RUNNER_TEMP/resolver-update"
+          echo "UPDATE_ROOT=$RUNNER_TEMP/resolver-update" >> "$GITHUB_ENV"
+          python3 -c 'import json, os; c=json.load(open("update-config.json")); f=open(os.environ["GITHUB_OUTPUT"], "a"); print("go="+c["go_version"], "dnsfaster="+c["dnsfaster_ref"], sep="\n", file=f)'
+
+      - name: Install Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ steps.tools.outputs.go }}
+          cache: false
+
+      - name: Install the pinned dnsfaster revision
+        timeout-minutes: 8
+        env:
+          DNSFASTER_REF: ${{ steps.tools.outputs.dnsfaster }}
+          GOTOOLCHAIN: local
+        run: |
+          go version | tee "$UPDATE_ROOT/tooling.log"
+          for attempt in 1 2 3; do
+            if go install "github.com/bp0lr/dnsfaster@$DNSFASTER_REF" >> "$UPDATE_ROOT/tooling.log" 2>&1; then
+              dnsfaster --version | tee -a "$UPDATE_ROOT/tooling.log"
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then sleep 5; fi
+          done
+          cat "$UPDATE_ROOT/tooling.log"
+          echo '::error::Could not install the pinned dnsfaster revision after 3 attempts. See tooling.log.'
+          exit 1
+
+      - name: Download, measure and validate without changing published files
+        run: python3 scripts/update.py --output "$UPDATE_ROOT/candidate"
+
+      - name: Explain a failed generation
+        if: failure()
+        run: |
+          echo '::error::Generation failed. The published lists were preserved; inspect the report and logs.'
+          echo 'Generation failed. No publication was attempted. See the available report and logs in the artifact.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload candidate lists, report and diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: resolver-update-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/resolver-update/
+          if-no-files-found: warn
+          retention-days: 14
+
+  publish:
+    name: Publish validated changes
+    needs: generate
+    if: >-
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+      (github.event_name == 'schedule' || !inputs.dry_run)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the validated revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Download this run's candidate bundle
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: resolver-update-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/resolver-update
+
+      - name: Publish only changed, validated files
+        env:
+          PUBLISH_BRANCH: ${{ github.event.repository.default_branch }}
+        run: python3 scripts/publish.py --candidate "$RUNNER_TEMP/resolver-update/candidate" --branch "$PUBLISH_BRANCH"
+
+      - name: Explain a failed publication
+        if: failure()
+        run: |
+          echo '::error::Publication failed. Inspect the Git error, branch rules and workflow token permissions. The validated candidate remains in the artifact.'
+          echo 'Publication failed; the candidate remains available in the generation artifact. Check the Git error, branch rules and workflow token permissions before retrying.' >> "$GITHUB_STEP_SUMMARY"
