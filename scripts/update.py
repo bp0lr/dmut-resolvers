@@ -269,9 +269,12 @@ def prepare(repo, output, config, executable="dnsfaster"):
         candidates, source_counts = parse_source(source, config["max_candidates"])
         report.update(source_counts, candidates=len(candidates))
         (output / "input.txt").write_bytes(list_bytes(candidates))
+        # Override dnsfaster's unrelated default negative-check domains. Both
+        # correctness checks and measurements use the configured validation domain.
         args = [executable, "--in", str(output / "input.txt"), "--out", str(output / "results.json"),
                 "--format", "json", "--include-filtered", "--validation", "baseline", "--record-types", "A",
-                "--domain", config["domain"], "--tests", str(config["tests"]), "--workers", str(config["workers"]),
+                "--domain", config["domain"], "--negative-domain", config["domain"],
+                "--tests", str(config["tests"]), "--workers", str(config["workers"]),
                 "--qps", str(config["qps"]), "--timeout", f"{config['timeout_seconds']}s",
                 "--max-duration", f"{config['max_duration_seconds']}s", "--validation-retries", "1",
                 "--filter-rate", str(config["minimum_success_percent"]), "--filter-p95", str(config["maximum_p95_ms"]), "--sort", "p95"]

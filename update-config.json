@@ -6,7 +6,7 @@
   "max_candidates": 20000,
   "minimum_resolvers": 20,
   "maximum_drop_fraction": 0.5,
-  "domain": "example.com",
+  "domain": "iana.org",
   "tests": 20,
   "workers": 10,
   "qps": 50,

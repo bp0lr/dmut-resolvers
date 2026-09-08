@@ -31,7 +31,7 @@ curl --fail --location --output resolvers.txt https://raw.githubusercontent.com/
 
 ## Automatic and manual updates
 
-The **Update DNS resolvers** workflow is scheduled daily at **06:23 UTC (03:23 in Buenos Aires)**. Scheduled runs publish valid changes on the default branch. GitHub may delay scheduled jobs; in public repositories it can disable them after 60 days without repository activity. See [GitHub's schedule documentation](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
+The **Update DNS resolvers** workflow is scheduled weekly on **Mondays at 06:23 UTC (03:23 in Buenos Aires)**. Scheduled runs publish valid changes on the default branch. GitHub may delay scheduled jobs; in public repositories it can disable them after 60 days without repository activity. See [GitHub's schedule documentation](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
 
 To preview or publish an update:
 
@@ -58,6 +58,7 @@ The current settings are in [update-config.json](update-config.json):
 | Measurements | 20 per resolver, 10 workers, global limit of 50 queries/second |
 | Time limits | 2 seconds per query, 180 minutes for DNS work, 195 minutes for the generation job |
 | Correctness | dnsfaster baseline consensus, A records, positive and negative checks, one retry for validation transport failures |
+| Validation domain | `iana.org`, used for the positive check, random-subdomain NXDOMAIN checks and measurements; overrides dnsfaster's default negative-check domains |
 | Minimum measured success rate | 95% |
 | Maximum measured p95 latency | 400 ms |
 | Minimum published count | 20 |
@@ -66,6 +67,8 @@ The current settings are in [update-config.json](update-config.json):
 These are initial operational settings to review in preview runs, not guarantees about resolver quality. The source contained about 11,500 eligible addresses when this workflow was developed, so a full run can take substantial time. The query limit also covers reference and validation queries. A larger source may require reviewing the time budget. The updater does not automatically relax validation, retry the entire measurement to obtain a passing sample, or publish partial results when a deadline expires.
 
 All input resolvers must appear exactly once in the structured result, including filtered entries. Passing results must satisfy the configured measurement and validation checks. Both lists are derived from this single dataset, with identical ranking, and their hashes are verified again before publication. A candidate older than 24 hours cannot be published by rerunning an old publication job.
+
+The configured domain must have an A answer agreed on by the reference resolvers and return NXDOMAIN for random nonexistent subdomains. `example.com` currently returns NOERROR with no answers for those names, which is incompatible with this pinned dnsfaster revision's NXDOMAIN checks. The updater explicitly limits negative checks to the configured domain: dnsfaster's implicit defaults include unrelated domains whose availability can block the entire update. These checks do not measure blocking of those other domains. Recheck both positive and negative responses from the Actions runner when changing `domain`.
 
 The historical list has no comparable validation metadata, so the first publication applies the absolute minimum and skips the relative-drop check. Subsequent publications apply both checks. Review the first preview carefully before enabling publication.
 
@@ -118,7 +121,7 @@ Dependabot proposes weekly updates for the SHA-pinned GitHub Actions. Update `go
 
 | Problem | What to inspect |
 | --- | --- |
-| No daily runs | Confirm the workflow is on the default branch and scheduled Actions are enabled. Check for inactivity suspension. |
+| No weekly runs | Confirm the workflow is on the default branch and scheduled Actions are enabled. Check for inactivity suspension. |
 | Tool installation fails | Read `tooling.log`; check the pinned revision, required Go version and GitHub/module-proxy availability. |
 | Download fails or contains invalid text | Read `candidate/download.log` and the report. Check the source's status and format; do not substitute unchecked content. |
 | No consensus or too few passing resolvers | Read `candidate/dnsfaster.log` and, when available, `candidate/results.json`. Review network availability and the validation domain before changing thresholds. |

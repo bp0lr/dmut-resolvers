@@ -3,7 +3,7 @@ run-name: "DNS update · ${{ github.event_name == 'schedule' && 'scheduled publi
 
 on:
   schedule:
-    - cron: '23 6 * * *'
+    - cron: '23 6 * * 1'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -80,6 +80,9 @@ jobs:
       - name: Explain a failed generation
         if: failure()
         run: |
+          if [ -f "$UPDATE_ROOT/candidate/dnsfaster.log" ]; then
+            tail -n 40 "$UPDATE_ROOT/candidate/dnsfaster.log"
+          fi
           echo '::error::Generation failed. The published lists were preserved; inspect the report and logs.'
           echo 'Generation failed. No publication was attempted. See the available report and logs in the artifact.' >> "$GITHUB_STEP_SUMMARY"
 
