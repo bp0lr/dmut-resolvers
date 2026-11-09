@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "validated_at": "2026-11-02T17:31:14.870211+00:00",
+  "validated_at": "2026-11-09T17:49:45.677718+00:00",
   "source_url": "https://public-dns.info/nameserver/us.txt",
   "source_sha256": "d6ef44e5cf3050f63790b821babd33f127cb5f4b792be168da19f1b9c547ef87",
   "config": {
@@ -22,9 +22,9 @@
   },
   "dnsfaster_version": "v1.0.1-0.20260907165926-2ba7c0afdabd",
   "candidates": 11500,
-  "passing": 1753,
+  "passing": 2082,
   "sha256": {
-    "resolvers.txt": "e508249d3d3aedaaf850b1d7b9ae41af2f5625c8b4001ea4c11b40a525a8a27f",
-    "top20.txt": "73283708f4fa16c71a1e3c31457d981e46347bf9e615940cde75db8b2d1d929e"
+    "resolvers.txt": "cecad11bb48d23f46f5496a3164a23ab8a662046a0a443467db9ecc677f0128e",
+    "top20.txt": "d4fa955ba4f0caaacb8d66baa09dbf350ec90a035b47bb6e40a2db48eaa66082"
   }
 }
