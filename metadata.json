@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "validated_at": "2026-11-09T17:49:45.677718+00:00",
+  "validated_at": "2026-11-16T16:16:02.578492+00:00",
   "source_url": "https://public-dns.info/nameserver/us.txt",
-  "source_sha256": "d6ef44e5cf3050f63790b821babd33f127cb5f4b792be168da19f1b9c547ef87",
+  "source_sha256": "d9931648067e4a29c7f2e34cffbbc64e7f6af79adb416fb7315ace1e4803baf8",
   "config": {
     "go_version": "1.27.1",
     "dnsfaster_ref": "2ba7c0afdabd9fde0128a5fabf755cecf6ae2617",
@@ -21,10 +21,10 @@
     "maximum_p95_ms": 400
   },
   "dnsfaster_version": "v1.0.1-0.20260907165926-2ba7c0afdabd",
-  "candidates": 11500,
-  "passing": 2082,
+  "candidates": 1860,
+  "passing": 1206,
   "sha256": {
-    "resolvers.txt": "cecad11bb48d23f46f5496a3164a23ab8a662046a0a443467db9ecc677f0128e",
-    "top20.txt": "d4fa955ba4f0caaacb8d66baa09dbf350ec90a035b47bb6e40a2db48eaa66082"
+    "resolvers.txt": "14e35afa3cea9555b251785346a2f9bc77b01b219acd2a9575a505cf1771c93b",
+    "top20.txt": "585521902f2b1f849760b074da95ee14a8468b98aacbd1c9ee33f50e2284746b"
   }
 }
